@@ -4,7 +4,7 @@
 Measures the moisture levels with two sensors and waters the plants individually.
 The values are transmitted by MQTT and evaluated by Node-RED, if the moisture level is too low the ESP8266 will be instructed to switch on the micro water pumps.
 
-[![](http://img.youtube.com/vi/PIqeCujVt_k/0.jpg)](http://www.youtube.com/watch?v=PIqeCujVt_k "WARMS")
+[![WARMS](http://img.youtube.com/vi/PIqeCujVt_k/0.jpg)](http://www.youtube.com/watch?v=PIqeCujVt_k "WARMS")
 
 ## Overview
 The whole installation consists of the following parts:
