@@ -1,10 +1,10 @@
-# WARMS (
-> Automatic plant watering with remote control and Luminance, Temperature and Humidity data logging
+# WARMS
+> Automatic plant watering with remote control and luminance, temperature and humidity data logging
 
 Measures the moisture levels with two sensors and waters the plants individually.
 The values are transmitted by MQTT and evaluated by Node-RED, if the moisture level is too low the ESP8266 will be instructed to switch on the micro water pumps.
 
-![](header.png)
+[![](http://img.youtube.com/vi/PIqeCujVt_k/0.jpg)](http://www.youtube.com/watch?v=PIqeCujVt_k "WARMS")
 
 ## Overview
 The whole installation consists of the following parts:
@@ -39,11 +39,26 @@ todo: add screenshots (config / dashboard)
 1) Restart: `sudo systemctl restart mosquitto`
 
 ## Sensor box
-todo: add image of the box
+<img src="docs/images/WarmsCase.png" width="300"/>
 ### Printed circuit
 For the first prototype I used an `Arduino Nano` and an ESP8266 to connect to the Internet. The Arduino was wired to the ESP8266 by a software serial connection. I wasn't able to build a reliable link between the two. So I dropped the Arduino an used just the ESP8266. The only issue with this approach was, that the ESP8266 (ESP-01) didn't have enough IO ports (one less I needed) available.
 Fortunately there is a [solution](https://www.instructables.com/id/More-GPIO-for-ESP8266-01/) to this problem :)
+
 #### Schema
+The schema may be grouped into these sections:
+Color | Section | Remark
+--- | --- | ---
+Green | Power supply | USB connector, 5V to 3.3V converter and switching circuit
+Yellow | Micro-controller and sensor circuits | 
+Blue | Sensor connectors | Moisture, luminance, etc
+Purple | Green power led | Switches on once the device is running
+Red | Water pump driver |
+<img src="docs/images/WateringPlants_Sections.png" width="300"/>
+
+> The device will be powered off until the DS3231 switches SQW low (interrupt output). This happens when a set alarm occurs (currently it is set to 30min).
+> If `INT` is low then VGS will be greater than VGS threshold and the P-Channel MOSFET turns on. Then the voltage on V+ will be ~5V and with LM 1117T-3.3 will output 3.3V. The ESP8266 boots and starts the sketch (todo: see).
+
+##### Power supply (green)
 
 
 ## Meta
