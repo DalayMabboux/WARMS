@@ -50,6 +50,7 @@ Fortunately there is a [solution](https://www.instructables.com/id/More-GPIO-for
 The schema has been drawn in [Autodesk EAGLE](https://www.autodesk.com/products/eagle/overview). I grouped it into these sections:
 
 <img src="docs/images/WateringPlants_Sections.png" width="300"/>
+
 Color | Section | Remark
 --- | --- | ---
 Green | Power supply | USB connector, 5V to 3.3V converter and switching circuit
