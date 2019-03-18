@@ -2,14 +2,15 @@
 > Automatic plant watering with remote control and luminance, temperature and humidity data logging
 
 Measures the moisture levels with two sensors and waters the plants individually.
-The values are transmitted by MQTT and evaluated by Node-RED, if the moisture level is too low the ESP8266 will be instructed to switch on the micro water pumps.
+The values are transmitted from the ESP8266 over MQTT to Node-RED, If the moisture level is too low the ESP8266 will be instructed to switch on the micro water pumps.
 
 [![WARMS](http://img.youtube.com/vi/PIqeCujVt_k/0.jpg)](http://www.youtube.com/watch?v=PIqeCujVt_k "WARMS")
 
 ## Overview
 The whole installation consists of the following parts:
-* A Raspberry PI running Mosquitto (MQTT server) and Node-RED
-* A sensor box made up from a ESP8266, some sensors, micro pumps, etc.
+1. A Raspberry PI running Mosquitto (MQTT server) and Node-RED
+2. A sensor box made up from a ESP8266, some sensors, micro pumps, etc.
+3. A cloud based (GKE Google Kubernetes Engin) watchdog. If the cloud 'alive' doesn't get a callback from Node-RED, then an email will be sent . If the cloud 'alive' doesn't get a callback from Node-RED, then an email ("Alert, no heartbeat recevied from WARMS") will be sent.
 
 ## Raspberry PI
 ### SSL certificate
@@ -26,20 +27,22 @@ See [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-s
 ### Node-RED
 1) Follow the installation instruction on the [Node-RED site (Raspberry PI)](https://nodered.org/docs/hardware/raspberrypi).
 1) Install [node-red-dashboard](https://github.com/node-red/node-red-dashboard)
-1) Copy / Paste this node (todo: link file)
+1) Copy / paste [this](code/NodeRED.json)
 
-todo: add screenshots (config / dashboard)
+#### Dashboard
+<img src="docs/images/NodeRED-Dashboard.jpg"/>
 
 ### Mosquitto
 1) Install mosquitto
 1) Configure mosquitto:
    - Don't allow anonymous access
    - Specify the location of the SSL certificate
-   - ... see todo
+   - Configuration: [default.conf](code/default.conf) [mosquitto.conf](code/mosquitto.conf)
 1) Restart: `sudo systemctl restart mosquitto`
 
 ## Sensor box
 <img src="docs/images/WarmsCase.png" width="300"/>
+
 ### Printed circuit
 For the first prototype I used an `Arduino Nano` and an ESP8266 to connect to the Internet. The Arduino was wired to the ESP8266 by a software serial connection. I wasn't able to build a reliable link between the two. So I dropped the Arduino an used just the ESP8266. The only issue with this approach was, that the ESP8266 (ESP-01) didn't have enough IO ports (one less I needed) available.
 Fortunately there is a [solution](https://www.instructables.com/id/More-GPIO-for-ESP8266-01/) to this problem :)
@@ -47,10 +50,11 @@ Fortunately there is a [solution](https://www.instructables.com/id/More-GPIO-for
 [JLCPCB](https://jlcpcb.com) printed 10 of them for 2$ (exclusive shipping costs).
 
 #### Schema
-The schema has been drawn in [Autodesk EAGLE](https://www.autodesk.com/products/eagle/overview). I grouped it into these sections:
+The schema has been drawn in [Autodesk EAGLE](https://www.autodesk.com/products/eagle/overview).
 
 <img src="docs/images/WateringPlants_Sections.png" width="300"/>
 
+It is grouped into these sectios:
 Color | Section | Remark
 --- | --- | ---
 Green | Power supply | USB connector, 5V to 3.3V converter and switching circuit
@@ -58,7 +62,6 @@ Yellow | Micro-controller and sensor circuits |
 Blue | Sensor connectors | Moisture, luminance, etc
 Purple | Green power led | Switches on once the device is running
 Red | Water pump driver |
-
 
 > The device will be powered off until the DS3231 switches SQW low (interrupt output). This happens when a set alarm occurs (currently it is set to 30min).
 > If `INT` is low then VGS will be greater than VGS threshold and the P-Channel MOSFET turns on. Then the voltage on V+ will be ~5V and with LM 1117T-3.3 will output 3.3V. The ESP8266 boots and starts the sketch (todo: see).
@@ -80,27 +83,21 @@ The WARMS board just uses 3 (A0 to A3) of the 4 AD inputs of the ADS1015.
 ##### Water pump driver (red)
 MOTOR0 and MOTOR1 will be set to GND to switch on the P-channel MOSFETS.
 
-The diode (D1 and D2) are just Flyback-Diodes.
+The diodes (D1 and D2) are just Flyback-Diodes.
+
+#### Arduino sketch
+The sketch first sets all parts up (I2C, RTC, Wifi, MQTT, IN-OUTPUT). Then the main loop starts by connecting to MQTT (subscribe for PUMP and SLEEP messages). The SLEEP functionallity hasn't yet been implemented.
+Once all is set up, then it starts transmitting the luminence, moisture 1 and 2, humidity and temparture.
 
 ### 3D printed parts
 All parts have been drawn with [Autodesk Fusion 360](https://www.autodesk.com/products/fusion-360/overview).
-#### Box
-here weiter machen [docs/images/WarmsCase.png]()
-
+The Fusion Archive file can be found [here](code/WARMS_Box.f3d).
 
 ## Meta
+Dalay Mabboux – [@mabbouxd](https://twitter.com/mabbouxd)
 
-Your Name – [@YourTwitter](https://twitter.com/dbader_org) – YourEmail@example.com
+WARMS is licensed under a
+Creative Commons Attribution-ShareAlike 4.0 International License.
 
-Distributed under the XYZ license. See ``LICENSE`` for more information.
-
-[https://github.com/yourname/github-link](https://github.com/dbader/)
-
-
-<!-- Markdown link & img dfn's -->
-[npm-image]: https://img.shields.io/npm/v/datadog-metrics.svg?style=flat-square
-[npm-url]: https://npmjs.org/package/datadog-metrics
-[npm-downloads]: https://img.shields.io/npm/dm/datadog-metrics.svg?style=flat-square
-[travis-image]: https://img.shields.io/travis/dbader/node-datadog-metrics/master.svg?style=flat-square
-[travis-url]: https://travis-ci.org/dbader/node-datadog-metrics
-[wiki]: https://github.com/yourname/yourproject/wiki
+You should have received a copy of the license along with this
+work. If not, see <http://creativecommons.org/licenses/by-sa/4.0/>.
